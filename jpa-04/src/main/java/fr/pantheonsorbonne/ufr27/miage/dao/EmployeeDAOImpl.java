@@ -89,29 +89,45 @@ public class EmployeeDAOImpl implements EmployeeDAO {
                 manager.remove(e);
             }
         }
-
-
-
     }
 
     @Override
     public double getTotalSalary() {
-        return 0;
+        Query query = manager.createQuery("SELECT e.salary from Employee e");
+        double result = 0;
+        for( double salary : (List<Double>) query.getResultList()){
+            result += salary;
+        }
+        return result;
     }
 
     @Override
     public double getPhpGuysCumulatedSalary() {
-        return 0;
+        Query query = manager.createQuery("SELECT e.salary from Employee  e where e.department.name=:p");
+        query.setParameter("p", "php");
+        double result = 0;
+        for( double salary : (List<Double>) query.getResultList()){
+            result += salary;
+        }
+        return result;
     }
 
     @Override
     public int countJavaGuys() {
-        return 0;
+        Query query = manager.createQuery("select count(e) from Employee e where e.department.name=:j");
+        query.setParameter("j", "java");
+        long res = (long) query.getSingleResult();
+        return Math.toIntExact(res);
     }
 
     @Override
     public void giveRaiseToJavaGuys(double v) {
-
+        manager.getTransaction().begin();
+        Query query = manager.createQuery("update Employee e set e.salary = e.salary + :bonus where e.department.name=:j");
+        query.setParameter("j", "java");
+        query.setParameter("bonus", v);
+        query.executeUpdate();
+        manager.getTransaction().commit();
     }
 
 
