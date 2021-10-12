@@ -8,6 +8,7 @@ import fr.pantheonsorbonne.ufr27.miage.domain.Employee_;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
@@ -121,13 +122,15 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     }
 
     @Override
+    @Transactional
     public void giveRaiseToJavaGuys(double v) {
-        manager.getTransaction().begin();
-        Query query = manager.createQuery("update Employee e set e.salary = e.salary + :bonus where e.department.name=:j");
+        Query query = manager.createQuery("SELECT e from Employee e where e.department.name=:j");
         query.setParameter("j", "java");
-        query.setParameter("bonus", v);
-        query.executeUpdate();
-        manager.getTransaction().commit();
+        double result = 0;
+        for( Employee employee : (List<Employee>) query.getResultList()) {
+            employee.setSalary(employee.getSalary() + v);
+            manager.persist(employee);
+        }
     }
 
 
